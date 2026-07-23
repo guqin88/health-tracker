@@ -1,0 +1,949 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#007AFF">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<title>健康追踪</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,"SF Pro","Helvetica Neue",sans-serif;background:#f5f7fa;color:#1d1d1f;font-size:16px;-webkit-font-smoothing:antialiased}
+body{padding-top:env(safe-area-inset-top,0);padding-bottom:env(safe-area-inset-bottom,0);padding-left:env(safe-area-inset-left,0);padding-right:env(safe-area-inset-right,0)}
+#app{height:100%;display:flex;flex-direction:column;overflow:hidden}
+.view{flex:1;overflow-y:auto;padding:16px;padding-bottom:80px}
+.view.hidden{display:none}
+.tab-bar{position:fixed;bottom:0;left:0;right:0;display:flex;background:#fff;border-top:1px solid #e5e5ea;padding:8px 0;padding-bottom:calc(8px + env(safe-area-inset-bottom,0));z-index:100}
+.tab-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;border:none;background:none;font-size:11px;color:#8e8e93;cursor:pointer;padding:4px 0}
+.tab-btn.active{color:#007AFF}
+.tab-btn svg{width:24px;height:24px}
+.card{background:#fff;border-radius:12px;padding:16px;margin-bottom:12px;box-shadow:0 0.5px 1px rgba(0,0,0,.04)}
+.card-title{font-size:17px;font-weight:600;margin-bottom:8px}
+.card-sub{font-size:13px;color:#8e8e93;margin-bottom:4px}
+.progress-bar{height:6px;background:#e5e5ea;border-radius:3px;overflow:hidden}
+.progress-fill{height:100%;background:#007AFF;border-radius:3px;transition:width .3s}
+.label{font-size:15px;font-weight:500;margin-bottom:6px;margin-top:12px}
+.label:first-child{margin-top:0}
+.hint{font-size:12px;color:#8e8e93;margin-bottom:8px}
+.option-group{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px}
+.option-btn{padding:8px 16px;border:1.5px solid #e5e5ea;border-radius:20px;background:#fff;font-size:14px;color:#1d1d1f;cursor:pointer;transition:all .15s;user-select:none}
+.option-btn.selected{border-color:#007AFF;background:#e8f0fe;color:#007AFF}
+.number-select{display:flex;align-items:center;gap:12px}
+.number-select button{width:36px;height:36px;border-radius:50%;border:1.5px solid #e5e5ea;background:#fff;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.number-select .value{font-size:20px;font-weight:600;min-width:48px;text-align:center}
+textarea{width:100%;padding:12px;border:1.5px solid #e5e5ea;border-radius:10px;font-size:15px;font-family:inherit;resize:vertical;min-height:60px;background:#fff;outline:none;transition:border-color .15s}
+textarea:focus{border-color:#007AFF}
+select{width:100%;padding:10px;border:1.5px solid #e5e5ea;border-radius:10px;font-size:15px;font-family:inherit;background:#fff;outline:none;margin-bottom:8px;-webkit-appearance:auto;appearance:auto;color:#1d1d1f}
+select:focus{border-color:#007AFF}
+.dim-card{padding:16px;border-radius:12px;background:#fff;margin-bottom:10px;box-shadow:0 0.5px 1px rgba(0,0,0,.04);cursor:pointer;display:flex;justify-content:space-between;align-items:center;transition:transform .1s}
+.dim-card:active{transform:scale(.98)}
+.dim-card .name{font-size:16px;font-weight:600}
+.dim-card .score{font-size:14px;padding:4px 10px;border-radius:12px}
+.dim-card .score.empty{background:#f2f2f7;color:#8e8e93}
+.dim-card .score.filled{background:#e8f0fe;color:#007AFF}
+.dim-card .arrow{color:#c7c7cc;font-size:18px}
+.score-group{display:flex;gap:6px;flex-wrap:wrap}
+.score-btn{width:36px;height:36px;border-radius:50%;border:1.5px solid #e5e5ea;background:#fff;font-size:14px;font-weight:600;cursor:pointer;transition:all .15s}
+.score-btn.selected{border-color:#007AFF;background:#007AFF;color:#fff}
+.score-label{font-size:13px;color:#8e8e93;margin-top:8px;text-align:center}
+.header{padding:16px;padding-top:calc(16px + env(safe-area-inset-top,0));background:#fff}
+.header .date{font-size:20px;font-weight:700}
+.header .sub{font-size:13px;color:#8e8e93;margin-top:2px}
+.back-btn{border:none;background:none;font-size:16px;color:#007AFF;cursor:pointer;padding:8px 0;margin-bottom:8px;display:inline-flex;align-items:center;gap:4px}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center}
+.cal-grid .day{padding:8px 0;border-radius:8px;font-size:14px;cursor:pointer}
+.cal-grid .day.today{font-weight:700}
+.cal-grid .day.has-record::after{content:'';display:block;width:6px;height:6px;border-radius:50%;margin:2px auto 0}
+.cal-grid .day.has-record.completed::after{background:#34c759}
+.cal-grid .day.has-record.incomplete::after{background:#ff9500}
+.cal-grid .day.other-month{color:#c7c7cc}
+.cal-header{display:flex;justify-content:space-between;align-items:center;padding:12px 0}
+.export-btn{width:100%;padding:14px;border:none;border-radius:12px;font-size:16px;font-weight:600;cursor:pointer;margin-bottom:10px;transition:opacity .15s}
+.export-btn:active{opacity:.7}
+.export-btn.primary{background:#007AFF;color:#fff}
+.export-btn.secondary{background:#f2f2f7;color:#1d1d1f}
+.exercise-group{border:1.5px solid #e5e5ea;border-radius:10px;padding:12px;margin-bottom:8px;position:relative}
+.exercise-group .remove{position:absolute;top:8px;right:8px;border:none;background:none;font-size:18px;color:#ff3b30;cursor:pointer}
+.add-exercise{border:1.5px dashed #c7c7cc;border-radius:10px;padding:12px;background:none;font-size:14px;color:#007AFF;cursor:pointer;width:100%;text-align:center}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>/* ============ Data Model ============ */
+const EMPTY_RECORD = {
+  completed: false, updatedAt: 0,
+  physical: {
+    score: null, sleep_difficulty: null, sleep_hours: null, sleep_depth: null,
+    sleep_quality: null, sleep_tiredness: null, sleep_routine: null,
+    appetite: null, breakfast: [], lunch: [], dinner: [], drinks: [],
+    meal_regularity: [], diet_behavior: null, water: null, stool: null,
+    exercises: [], sedentary: null,
+    qi_blood: null, symptoms: [],
+    hospital: "", department: "", visit_reason: "", medication: "", medication_reason: ""
+  },
+  mental: {
+    score: null, mood_tags: [],
+    mental_states: [],
+    stress_source: "", stress_tolerance: null,
+    self_soothe_ability: null, self_soothe_action: "",
+    recovery_speed: null,
+    self_denial: null, self_denial_reason: "",
+    accept_present: null, accept_present_reason: ""
+  },
+  behavior: {
+    score: null, completion_rate: null, procrastination: null,
+    startup_resistance: "", flow_state: null, task_stagnation: null,
+    short_video_hours: null, scroll_frequency: null,
+    revenge_leisure: null, slack_pattern: null,
+    can_stop: null, adjustment_action: ""
+  },
+  interpersonal: {
+    score: null, bf_communication: null, parent_communication: null,
+    conflict: "", understanding: null, expectation_gap: null,
+    relationship_status: [],
+    social_hours: null, social_drain: null, solitude: null,
+    boundary_issue: null, boundary_reason: "",
+    has_support: null, support_channel: ""
+  },
+  purpose: {
+    score: null, has_short_term_goal: null, has_long_term_direction: null,
+    goal_vague: null, feels_wasted: null, feels_fulfilled: null,
+    has_stable_path: null, drifts_easily: null, long_term_motivation: null
+  }
+};
+
+/* ============ IndexedDB Layer ============ */
+const DB_NAME = "HealthTracker", DB_VER = 1, STORE = "records";
+const DB = {};
+DB.open = () => new Promise((res, rej) => {
+  const r = indexedDB.open(DB_NAME, DB_VER);
+  r.onerror = () => rej(r.error);
+  r.onsuccess = () => res(r.result);
+  r.onupgradeneeded = e => {
+    const d = e.target.result;
+    if (!d.objectStoreNames.contains(STORE)) d.createObjectStore(STORE, { keyPath: "id" });
+  };
+});
+DB.save = async (id, data) => {
+  const d = await DB.open(); const tx = d.transaction(STORE, "readwrite");
+  const s = tx.objectStore(STORE); data.id = id; data.updatedAt = Date.now();
+  return new Promise((res, rej) => { const r = s.put(data); r.onsuccess = ()=>res(); r.onerror = ()=>rej(r.error); });
+};
+DB.get = async id => {
+  const d = await DB.open(); const tx = d.transaction(STORE, "readonly");
+  const s = tx.objectStore(STORE);
+  return new Promise((res, rej) => { const r = s.get(id); r.onsuccess = ()=>res(r.result||null); r.onerror = ()=>rej(r.error); });
+};
+DB.getAll = async () => {
+  const d = await DB.open(); const tx = d.transaction(STORE, "readonly");
+  const s = tx.objectStore(STORE);
+  return new Promise((res, rej) => { const r = s.getAll(); r.onsuccess = ()=>res(r.result); r.onerror = ()=>rej(r.error); });
+};
+DB.getMonth = async (year, month) => {
+  const all = await DB.getAll(); const p = year + "-" + String(month).padStart(2,"0");
+  return all.filter(r => r.id && r.id.startsWith(p));
+};
+
+/* ============ App Utilities ============ */
+const APP = {};
+APP.today = () => { const d = new Date(); return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0"); };
+APP.todayCN = () => { const d = new Date(); const w = ["日","一","二","三","四","五","六"]; return d.getFullYear() + "年" + (d.getMonth()+1) + "月" + d.getDate() + "日 周" + w[d.getDay()]; };
+APP.dateCN = (id) => { const p = id.split("-"); const d = new Date(+p[0], +p[1]-1, +p[2]); const w = ["日","一","二","三","四","五","六"]; return +p[0] + "年" + (+p[1]) + "月" + (+p[2]) + "日 周" + w[d.getDay()]; };
+APP.deepMerge = (t, s) => {
+  if (!t) return JSON.parse(JSON.stringify(s));
+  for (const k in s) {
+    if (s[k] && typeof s[k] === "object" && !Array.isArray(s[k])) t[k] = APP.deepMerge(t[k]||{}, s[k]);
+        if (t[k] == null) t[k] = s[k];
+  }
+  return t;
+};
+APP.getOrCreateToday = async () => {
+  const id = APP.today(); let r = await DB.get(id);
+  return r ? APP.deepMerge(r, JSON.parse(JSON.stringify(EMPTY_RECORD))) : { id, ...JSON.parse(JSON.stringify(EMPTY_RECORD)) };
+};
+APP.getOrCreateDate = async (id) => {
+  let r = await DB.get(id);
+  return r ? APP.deepMerge(r, JSON.parse(JSON.stringify(EMPTY_RECORD))) : { id, ...JSON.parse(JSON.stringify(EMPTY_RECORD)) };
+};
+
+/* ============ Dimension Configuration ============ */
+const DIM_LABELS = {
+  physical: { label: "生理躯体健康", sub: "底层硬件基础", color: "#007AFF" },
+  mental:   { label: "心理情绪健康", sub: "内在感受中枢", color: "#8E8E93" },
+  behavior: { label: "时间与行为健康", sub: "心智自律层", color: "#FF9F0A" },
+  interpersonal: { label: "人际亲密健康", sub: "外部互动系统", color: "#30D158" },
+  purpose:  { label: "精神目标健康", sub: "顶层意义坐标", color: "#FF453A" }
+};
+const DIM_KEYS = Object.keys(DIM_LABELS);
+let currentRecord = null, currentDim = null, currentDate = null;
+/* ============ Auto Save ============ */
+APP.autoSave = async () => {
+  if (!currentRecord || !currentDate) return;
+  currentRecord.updatedAt = Date.now();
+  if (currentDim) {
+    const c = DIM_KEYS.filter(k => currentRecord[k] && currentRecord[k].score !== null).length;
+    if (c >= 5) currentRecord.completed = true;
+  }
+  await DB.save(currentDate, currentRecord);
+};
+
+/* ============ Render Helpers ============ */
+APP.h = (tag, attrs, ...children) => {
+  const el = document.createElement(tag);
+  if (attrs) for (const [k, v] of Object.entries(attrs)) {
+    if (k === "className") el.className = v;
+    else if (k.startsWith("on")) el.addEventListener(k.slice(2).toLowerCase(), v);
+    else if (v !== undefined && v !== null && v !== false) el.setAttribute(k, v);
+  }
+  for (const c of children) {
+    if (c == null) continue;
+    if (typeof c === "string" || typeof c === "number") el.appendChild(document.createTextNode(c));
+    else if (c.nodeType) el.appendChild(c);
+  }
+  return el;
+};
+APP.empty = (el) => { while (el.firstChild) el.removeChild(el.firstChild); };
+
+APP.renderRadio = (name, options, value, onChange, placeholder) => {
+  const sel = document.createElement("select");
+  sel.style.cssText = "width:100%;padding:10px;border:1.5px solid #e5e5ea;border-radius:10px;font-size:15px;font-family:inherit;background:#fff;outline:none;margin-bottom:8px;-webkit-appearance:auto";
+  if (placeholder) { const o = document.createElement("option"); o.value=""; o.textContent=placeholder; sel.appendChild(o); }
+  for (const opt of options) {
+    const o = document.createElement("option");
+    o.value = opt; o.textContent = opt;
+    if (value === opt) o.selected = true;
+    sel.appendChild(o);
+  }
+  sel.addEventListener("change", () => { onChange(sel.value); APP.autoSave(); });
+  return sel;
+};
+
+APP.renderCheckbox = (name, options, value, onChange) => {
+  const g = APP.h("div", { className: "option-group" });
+  for (const opt of options) {
+    const btn = APP.h("button", { className: "option-btn" + (value && value.includes(opt) ? " selected" : ""), type: "button" }, opt);
+    btn.addEventListener("click", () => {
+      let a = value ? [...value] : [];
+      if (a.includes(opt)) { a = a.filter(v => v !== opt); btn.classList.remove("selected"); }
+      else { a.push(opt); btn.classList.add("selected"); }
+      onChange(a); APP.autoSave();
+    });
+    g.appendChild(btn);
+  }
+  return g;
+};
+
+APP.renderNumber = (min, max, value, onChange, unit) => {
+  const c = APP.h("div", { className: "number-select" });
+  const initVal = value != null ? value : min;
+  const valEl = APP.h("span", { className: "value" }, initVal + (unit || ""));
+  const decBtn = APP.h("button", { type: "button" }, "−");
+  const incBtn = APP.h("button", { type: "button" }, "+");
+  decBtn.addEventListener("click", () => {
+    const cur = parseInt(valEl.textContent) || min;
+    const nv = Math.max(min, cur - 1);
+    valEl.textContent = nv + (unit || "");
+    onChange(nv); APP.autoSave();
+  });
+  incBtn.addEventListener("click", () => {
+    const cur = parseInt(valEl.textContent) || min;
+    const nv = Math.min(max, cur + 1);
+    valEl.textContent = nv + (unit || "");
+    onChange(nv); APP.autoSave();
+  });
+  c.appendChild(decBtn);
+  c.appendChild(valEl);
+  c.appendChild(incBtn);
+  return c;
+};
+
+APP.renderText = (value, onChange, placeholder) => {
+  const el = APP.h("textarea", { placeholder: placeholder || "填写备注..." });
+  if (value) el.value = value;
+  el.addEventListener("input", () => onChange(el.value));
+  el.addEventListener("blur", () => APP.autoSave());
+  return el;
+};
+
+APP.renderScore = (value, onChange) => {
+  const c = APP.h("div", {});
+  const g = APP.h("div", { className: "score-group" });
+  const labelEl = APP.h("div", { className: "score-label" }, value ? "当前评分：" + value + "/10" : "点击选择评分（1-10）");
+  for (let i = 1; i <= 10; i++) {
+    const btn = APP.h("button", { className: "score-btn" + (value === i ? " selected" : ""), type: "button" }, i);
+    btn.addEventListener("click", () => {
+      g.querySelectorAll(".score-btn").forEach(b => b.classList.remove("selected"));
+      btn.classList.add("selected");
+      labelEl.textContent = "当前评分：" + i + "/10";
+      onChange(i); APP.autoSave();
+    });
+    g.appendChild(btn);
+  }
+  c.appendChild(g);
+  c.appendChild(labelEl);
+  return c;
+};
+
+
+APP.renderMultiSelect = (name, options, value, onChange, placeholder) => {
+  const c = document.createElement("div");
+  c.style.cssText = "margin-bottom:8px";
+  let currentValue = (value || []).slice();
+  const tagsDiv = document.createElement("div");
+  tagsDiv.style.cssText = "display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px";
+  const sel = document.createElement("select");
+  sel.style.cssText = "flex:1;padding:8px;border:1.5px solid #e5e5ea;border-radius:8px;font-size:14px;font-family:inherit;background:#fff;outline:none;color:#1d1d1f";
+  const addBtn = document.createElement("button");
+  addBtn.textContent = "+";
+  addBtn.style.cssText = "padding:8px 14px;border:none;border-radius:8px;background:#007AFF;color:#fff;font-size:18px;cursor:pointer;flex-shrink:0";
+  const rebuild = () => {
+    while (tagsDiv.firstChild) tagsDiv.removeChild(tagsDiv.firstChild);
+    for (const item of currentValue) {
+      const tag = document.createElement("span");
+      tag.style.cssText = "display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:#e8f0fe;color:#007AFF;border-radius:16px;font-size:13px";
+      tag.appendChild(document.createTextNode(item));
+      const rm = document.createElement("button");
+      rm.textContent = "✕";
+      rm.style.cssText = "border:none;background:none;font-size:14px;color:#007AFF;cursor:pointer;padding:0;line-height:1;margin-left:2px";
+      rm.onclick = () => { currentValue = currentValue.filter(v => v !== item); onChange(currentValue); APP.autoSave(); rebuild(); };
+      tag.appendChild(rm);
+      tagsDiv.appendChild(tag);
+    }
+    while (sel.firstChild) sel.removeChild(sel.firstChild);
+    const remaining = options.filter(o => !currentValue.includes(o));
+    if (remaining.length === 0) { const o = document.createElement("option"); o.textContent = "已全选"; sel.appendChild(o); }
+    else {
+      const ph = document.createElement("option"); ph.value = ""; ph.textContent = placeholder||"选择..."; ph.selected = true; sel.appendChild(ph);
+      for (const opt of remaining) { const o = document.createElement("option"); o.value=opt; o.textContent=opt; sel.appendChild(o); }
+    }
+  };
+  addBtn.onclick = () => {
+    if (sel.value && sel.value !== "") { currentValue.push(sel.value); currentValue = [...currentValue]; onChange(currentValue); APP.autoSave(); rebuild(); }
+  };
+  rebuild();
+  c.appendChild(tagsDiv);
+  const row = document.createElement("div");
+  row.style.cssText = "display:flex;gap:6px";
+  row.appendChild(sel); row.appendChild(addBtn); c.appendChild(row);
+  return c;
+};APP.renderLabel = (text, hint) => {
+  const el = APP.h("div", { className: "label" }, text);
+  if (hint) el.appendChild(APP.h("div", { className: "hint" }, hint));
+  return el;
+};
+
+APP.renderSection = (title) => APP.h("div", { style: "font-size:15px;font-weight:600;margin-top:20px;margin-bottom:8px;padding-top:12px;border-top:1px solid #eee" }, title);
+
+APP.showToast = (msg) => {
+  const el = APP.h("div", { style: "position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.7);color:#fff;padding:10px 20px;border-radius:20px;font-size:14px;z-index:999;transition:opacity .3s" }, msg);
+  document.body.appendChild(el);
+  setTimeout(() => { el.style.opacity = "0"; setTimeout(() => el.remove(), 300); }, 1500);
+};
+
+/* ============ Layout & Navigation ============ */
+APP.init = async () => {
+  currentDate = APP.today();
+  currentRecord = await APP.getOrCreateToday();
+  APP.renderLayout();
+  await APP.renderHome();
+};
+
+APP.renderLayout = () => {
+  const app = document.getElementById("app");
+  APP.empty(app);
+  app.innerHTML = '<div class="view" id="view-home"></div><div class="view hidden" id="view-dim"></div><div class="view hidden" id="view-history"></div><div class="view hidden" id="view-export"></div><nav class="tab-bar"><button class="tab-btn active" data-view="home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1"/></svg><span>今日</span></button><button class="tab-btn" data-view="history"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg><span>历史</span></button><button class="tab-btn" data-view="export"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg><span>导出</span></button></nav>';
+  document.querySelectorAll(".tab-btn").forEach(btn => { btn.addEventListener("click", () => APP.switchView(btn.dataset.view)); });
+};
+
+APP.switchView = async (view) => {
+  document.querySelectorAll(".view").forEach(v => v.classList.add("hidden"));
+  document.getElementById("view-" + view).classList.remove("hidden");
+  document.querySelectorAll(".tab-btn").forEach(b => b.classList.toggle("active", b.dataset.view === view));
+  if (view === "home") await APP.renderHome();
+  else if (view === "history") await APP.renderHistory();
+  else if (view === "export") APP.renderExport();
+};
+
+APP.goHome = async () => {
+  currentDim = null; await APP.autoSave();
+  currentDate = APP.today();
+  currentRecord = await APP.getOrCreateToday();
+  await APP.switchView("home");
+};
+
+APP.openDimension = async (key, dateId) => {
+  currentDim = key;
+  currentDate = dateId || APP.today();
+  currentRecord = await APP.getOrCreateDate(currentDate);
+  document.getElementById("view-dim").classList.remove("hidden");
+  document.getElementById("view-home").classList.add("hidden");
+  APP.renderDimension(key);
+};
+
+/* ============ Home Page ============ */
+APP.renderHome = async () => {
+  currentDim = null;
+  currentRecord = await APP.getOrCreateToday();
+  const c = document.getElementById("view-home");
+  APP.empty(c);
+  const h = APP.h("div", { className: "header" });
+  h.appendChild(APP.h("div", { className: "date" }, APP.todayCN()));
+  c.appendChild(h);
+  const ct = DIM_KEYS.filter(k => currentRecord[k] && currentRecord[k].score !== null).length;
+  const p = APP.h("div", { className: "card" });
+  p.appendChild(APP.h("div", { className: "card-title" }, "健康记录进度"));
+  p.appendChild(APP.h("div", { className: "card-sub" }, "已完成 " + ct + "/5 个维度"));
+  const bar = APP.h("div", { className: "progress-bar" });
+  bar.appendChild(APP.h("div", { className: "progress-fill", style: "width:" + (ct/5*100) + "%" }));
+  p.appendChild(bar);
+  if (currentRecord.completed) p.appendChild(APP.h("div", { style: "margin-top:8px;color:#34C759;font-size:13px;font-weight:600" }, "✓ 今日记录已完成"));
+  c.appendChild(p);
+  for (const key of DIM_KEYS) {
+    const cfg = DIM_LABELS[key], dim = currentRecord[key];
+    const hasScore = dim && dim.score !== null;
+    const card = APP.h("div", { className: "dim-card", onClick: () => APP.openDimension(key) });
+    const info = APP.h("div", {});
+    info.appendChild(APP.h("div", { className: "name" }, cfg.label));
+    info.appendChild(APP.h("div", { className: "card-sub" }, hasScore ? "评分：" + dim.score + "/10" : "未填写"));
+    card.appendChild(info);
+    card.appendChild(APP.h("span", { className: "score " + (hasScore ? "filled" : "empty") }, hasScore ? dim.score + "/10" : "点击填写"));
+    card.appendChild(APP.h("span", { className: "arrow" }, "›"));
+    c.appendChild(card);
+  }
+};
+/* ============ Dimension Form: 生理躯体健康 ============ */
+APP.renderPhysical = () => {
+  const dim = currentRecord.physical;
+  if (!dim) return APP.h("div", {}, "数据初始化异常");
+  const c = APP.h("div", { className: "card" });
+  c.appendChild(APP.h("div", { className: "card-title" }, DIM_LABELS.physical.label));
+  c.appendChild(APP.h("div", { className: "card-sub" }, DIM_LABELS.physical.sub));
+
+  // 睡眠维度
+  c.appendChild(APP.renderSection("睡眠维度"));
+  c.appendChild(APP.renderLabel("入睡难度", "失眠/困难2h/中等1h/简单0.5h"));
+  c.appendChild(APP.renderRadio("sleep_diff", ["失眠","困难2h内入睡","中等1h内入睡","简单0.5h内入睡"], dim.sleep_difficulty, v => { dim.sleep_difficulty = v; }));
+  c.appendChild(APP.renderLabel("总有效睡眠时长（小时）"));
+  c.appendChild(APP.renderNumber(1, 24, dim.sleep_hours, v => { dim.sleep_hours = v; }, "h"));
+  c.appendChild(APP.renderLabel("睡眠深浅"));
+  c.appendChild(APP.renderRadio("sleep_depth", ["深","浅"], dim.sleep_depth, v => { dim.sleep_depth = v; }));
+  c.appendChild(APP.renderLabel("睡眠质量"));
+  c.appendChild(APP.renderRadio("sleep_qual", ["半夜易醒","多梦"], dim.sleep_quality, v => { dim.sleep_quality = v; }));
+  c.appendChild(APP.renderLabel("晨起疲惫感"));
+  c.appendChild(APP.renderRadio("sleep_tired", ["有","无"], dim.sleep_tiredness, v => { dim.sleep_tiredness = v; }));
+  c.appendChild(APP.renderLabel("作息节律稳定性"));
+  c.appendChild(APP.renderRadio("sleep_routine", ["坚持早睡一周7天","早睡晚睡相间","持续晚睡"], dim.sleep_routine, v => { dim.sleep_routine = v; }));
+
+  // 饮食与消化
+  c.appendChild(APP.renderSection("饮食与消化"));
+  c.appendChild(APP.renderLabel("食欲"));
+  c.appendChild(APP.renderRadio("appetite", ["好","一般","差"], dim.appetite, v => { dim.appetite = v; }));
+  c.appendChild(APP.renderLabel("早餐"));
+  c.appendChild(APP.renderMultiSelect("breakfast", ["没吃","馒头","包子","水煮蛋","方便面","小米粥","白粥","汤泡饭","早餐面条","玉米","馄饨"], dim.breakfast, v => { dim.breakfast = v; }));
+  c.appendChild(APP.renderLabel("午餐"));
+  c.appendChild(APP.renderMultiSelect("lunch", ["辣炒卤牛肉","辣炒鱿鱼丝","辣炒卤猪肉","青椒炒肉丝","小鸡炖蘑菇","鹌鹑蛋红烧肉","红烧鱼","青椒炒鸡蛋干","炒生菜","炒空心菜","炒油麦菜","青菜炒腐竹","山药炒木耳","青椒土豆丝","牛肉丸生菜汤","番茄鸡蛋汤","紫菜鸡蛋汤","冬瓜排骨汤","玉米排骨汤","萝卜排骨汤","香菇鸡汤","鱼汤","米饭","馒头","拌面","牛肉丸粿条","江西米粉","水饺","皮蛋瘦肉粥","白粥","烤鱼","椰子鸡","海底捞","火锅","外卖"], dim.lunch, v => { dim.lunch = v; }));
+  c.appendChild(APP.renderLabel("晚餐"));
+  c.appendChild(APP.renderMultiSelect("dinner", ["辣炒卤牛肉","辣炒鱿鱼丝","辣炒卤猪肉","青椒炒肉丝","小鸡炖蘑菇","鹌鹑蛋红烧肉","红烧鱼","青椒炒鸡蛋干","炒生菜","炒空心菜","炒油麦菜","青菜炒腐竹","山药炒木耳","青椒土豆丝","牛肉丸生菜汤","番茄鸡蛋汤","紫菜鸡蛋汤","冬瓜排骨汤","玉米排骨汤","萝卜排骨汤","香菇鸡汤","鱼汤","米饭","馒头","拌面","牛肉丸粿条","江西米粉","水饺","皮蛋瘦肉粥","白粥","烤鱼","椰子鸡","海底捞","火锅","外卖"], dim.dinner, v => { dim.dinner = v; }));
+  c.appendChild(APP.renderLabel("饮品"));
+  c.appendChild(APP.renderMultiSelect("drinks", ["无","咖啡","奶茶","牛奶"], dim.drinks, v => { dim.drinks = v; }, "选择饮品"));
+  c.appendChild(APP.renderLabel("三餐规律"));
+  c.appendChild(APP.renderMultiSelect("meal_reg", ["没吃早饭","午餐过晚","没吃晚饭"], dim.meal_regularity, v => { dim.meal_regularity = v; }, "选择规律问题"));
+  c.appendChild(APP.renderLabel("饮食情况"));
+  c.appendChild(APP.renderRadio("diet_beh", ["暴饮暴食","节食"], dim.diet_behavior, v => { dim.diet_behavior = v; }));
+  c.appendChild(APP.renderLabel("饮水情况"));
+  c.appendChild(APP.renderRadio("water", ["正常","少"], dim.water, v => { dim.water = v; }));
+  c.appendChild(APP.renderLabel("大便状态"));
+  c.appendChild(APP.renderRadio("stool", ["窜稀","便秘","没拉"], dim.stool, v => { dim.stool = v; }));
+
+  // 运动与体能
+  c.appendChild(APP.renderSection("运动与体能"));
+  c.appendChild(APP.renderLabel("运动记录"));
+  const exContainer = APP.h("div", {});
+  const renderExercises = () => {
+    APP.empty(exContainer);
+    for (let i = 0; i < (dim.exercises || []).length; i++) {
+      const g = APP.h("div", { className: "exercise-group" });
+      g.appendChild(APP.h("button", { className: "remove", type: "button", onClick: () => {
+        dim.exercises.splice(i, 1); renderExercises(); APP.autoSave();
+      } }, "\u2715"));
+      const ex = dim.exercises[i];
+      g.appendChild(APP.renderLabel("运动类型"));
+      g.appendChild(APP.renderRadio("ex_type_"+i, ["八段锦","金刚功","长寿功","跑步","散步","骑自行车","爬山","举哑铃"], ex.type, v => { ex.type = v; APP.autoSave(); }));
+      g.appendChild(APP.renderLabel("时长"));
+      g.appendChild(APP.renderRadio("ex_dur_"+i, ["10min","20min","30min","1h","2h以上"], ex.duration, v => { ex.duration = v; APP.autoSave(); }));
+      exContainer.appendChild(g);
+    }
+    const addBtn = APP.h("button", { className: "add-exercise", type: "button", onClick: () => {
+      if (!dim.exercises) dim.exercises = [];
+      dim.exercises.push({ type: null, duration: null }); renderExercises();
+    } }, "+ 添加运动");
+    exContainer.appendChild(addBtn);
+  };
+  renderExercises();
+  c.appendChild(exContainer);
+  c.appendChild(APP.renderLabel("久坐时长"));
+  c.appendChild(APP.renderRadio("sedentary", ["久坐轻度<4h","久坐中度4~6h","久坐重度≥6h"], dim.sedentary, v => { dim.sedentary = v; }));
+
+  // 体征与体感
+  c.appendChild(APP.renderSection("体征与体感"));
+  c.appendChild(APP.renderLabel("气血状态"));
+  c.appendChild(APP.renderRadio("qi_blood", ["平和","偏虚","阻滞","郁热或虚热"], dim.qi_blood, v => { dim.qi_blood = v; }));
+  c.appendChild(APP.renderLabel("体感状态"));
+  c.appendChild(APP.renderMultiSelect("symptoms", ["畏寒","上火","乏力","头晕","腰疼","肩膀酸痛","腹痛","胃痛","肚子痛","肚子右上腹痛"], dim.symptoms, v => { dim.symptoms = v; }));
+
+  // 就医与用药
+  c.appendChild(APP.renderSection("就医与用药"));
+  c.appendChild(APP.renderLabel("医院"));
+  c.appendChild(APP.renderText(dim.hospital, v => { dim.hospital = v; }, "填写医院名称"));
+  c.appendChild(APP.renderLabel("科室"));
+  c.appendChild(APP.renderText(dim.department, v => { dim.department = v; }, "填写科室"));
+  c.appendChild(APP.renderLabel("就诊原因"));
+  c.appendChild(APP.renderText(dim.visit_reason, v => { dim.visit_reason = v; }, "填写就诊原因"));
+  c.appendChild(APP.renderLabel("用药"));
+  c.appendChild(APP.renderText(dim.medication, v => { dim.medication = v; }, "填写用药名称"));
+  c.appendChild(APP.renderLabel("用药原因"));
+  c.appendChild(APP.renderText(dim.medication_reason, v => { dim.medication_reason = v; }, "填写用药原因"));
+
+  // Score
+  c.appendChild(APP.h("div", { style: "margin-top:20px;padding-top:16px;border-top:2px solid #e5e5ea" }));
+  c.appendChild(APP.renderLabel("生理躯体健康总分"));
+  c.appendChild(APP.renderScore(dim.score, v => { dim.score = v; }));
+  return c;
+};
+/* ============ Dimension Form: 心理情绪健康 ============ */
+APP.renderMental = () => {
+  const dim = currentRecord.mental;
+  if (!dim) return APP.h("div", {}, "数据初始化异常");
+  const c = APP.h("div", { className: "card" });
+  c.appendChild(APP.h("div", { className: "card-title" }, DIM_LABELS.mental.label));
+  c.appendChild(APP.h("div", { className: "card-sub" }, DIM_LABELS.mental.sub));
+
+  c.appendChild(APP.renderLabel("情绪基调", "全天整体心境底色"));
+  c.appendChild(APP.renderRadio("mood_tags", ["平静","愉悦","低落","烦躁","焦虑","空虚","麻木"], dim.mood_tags, v => { dim.mood_tags = v; }, "选择心情基调"));
+  c.appendChild(APP.renderSection("心智状态"));
+  const mentalC = document.createElement("div");
+  if (!dim.mental_states) dim.mental_states = [];
+  const renderMental = () => {
+    while (mentalC.firstChild) mentalC.removeChild(mentalC.firstChild);
+    const arr = dim.mental_states;
+    for (let i = 0; i < arr.length; i++) {
+      const g = APP.h("div", { className: "exercise-group" });
+      g.appendChild(APP.h("button", { className: "remove", type: "button", onClick: () => { arr.splice(i,1); renderMental(); APP.autoSave(); } }, "\u2715"));
+      const es = arr[i];
+      g.appendChild(APP.renderLabel("类型"));
+      g.appendChild(APP.renderRadio("ms_"+i, ["内心杂念","反刍思考","过度纠结","消费冲动","争吵冲动"], es.type, v => { es.type=v; APP.autoSave(); }));
+      g.appendChild(APP.renderLabel("原因"));
+      g.appendChild(APP.renderText(es.reason, v => { es.reason=v; }, "为什么有这种心智状态"));
+      mentalC.appendChild(g);
+    }
+    const addBtn = APP.h("button", { className: "add-exercise", type: "button", onClick: () => { arr.push({type:null,reason:""}); renderMental(); } }, "+ 添加心智状态");
+    mentalC.appendChild(addBtn);
+  };
+  renderMental();
+  c.appendChild(mentalC);
+  c.appendChild(APP.renderSection("压力与恢复力"));
+  c.appendChild(APP.renderLabel("当日压力来源"));
+  c.appendChild(APP.renderText(dim.stress_source, v => { dim.stress_source = v; }, "填写压力来源"));
+  c.appendChild(APP.renderLabel("压力耐受度"));
+  c.appendChild(APP.renderRadio("stress_tol", ["高","中","低"], dim.stress_tolerance, v => { dim.stress_tolerance = v; }));
+  c.appendChild(APP.renderLabel("自我安抚能力"));
+  c.appendChild(APP.renderRadio("soothe_ab", ["高","中","低"], dim.self_soothe_ability, v => { dim.self_soothe_ability = v; }));
+  c.appendChild(APP.renderLabel("安抚行为"));
+  c.appendChild(APP.renderText(dim.self_soothe_action, v => { dim.self_soothe_action = v; }, "做了什么安抚自己"));
+  c.appendChild(APP.renderLabel("情绪修复速度"));
+  c.appendChild(APP.renderRadio("recovery", ["快","中","慢"], dim.recovery_speed, v => { dim.recovery_speed = v; }));
+  c.appendChild(APP.renderSection("内在接纳度"));
+  c.appendChild(APP.renderLabel("是否自我否定"));
+  c.appendChild(APP.renderRadio("self_denial", ["是","否"], dim.self_denial, v => { dim.self_denial = v; }));
+  c.appendChild(APP.renderText(dim.self_denial_reason, v => { dim.self_denial_reason = v; }, "原因"));
+  c.appendChild(APP.renderLabel("对当下状态是否包容"));
+  c.appendChild(APP.renderRadio("accept", ["是","否"], dim.accept_present, v => { dim.accept_present = v; }));
+  c.appendChild(APP.renderText(dim.accept_present_reason, v => { dim.accept_present_reason = v; }, "原因"));
+  c.appendChild(APP.h("div", { style: "margin-top:20px;padding-top:16px;border-top:2px solid #e5e5ea" }));
+  c.appendChild(APP.renderLabel("心理情绪健康总分"));
+  c.appendChild(APP.renderScore(dim.score, v => { dim.score = v; }));
+  return c;
+};
+
+/* ============ Dimension Form: 时间与行为健康 ============ */
+APP.renderBehavior = () => {
+  const dim = currentRecord.behavior;
+  if (!dim) return APP.h("div", {}, "数据初始化异常");
+  const c = APP.h("div", { className: "card" });
+  c.appendChild(APP.h("div", { className: "card-title" }, DIM_LABELS.behavior.label));
+  c.appendChild(APP.h("div", { className: "card-sub" }, DIM_LABELS.behavior.sub));
+  c.appendChild(APP.renderSection("任务执行状态"));
+  c.appendChild(APP.renderLabel("计划完成率（%）"));
+  c.appendChild(APP.renderNumber(0, 100, dim.completion_rate, v => { dim.completion_rate = v; }, "%"));
+  c.appendChild(APP.renderLabel("拖延程度"));
+  c.appendChild(APP.renderRadio("procrast", ["无","轻微","中度","重度"], dim.procrastination, v => { dim.procrastination = v; }));
+  c.appendChild(APP.renderLabel("启动阻力"));
+  c.appendChild(APP.renderText(dim.startup_resistance, v => { dim.startup_resistance = v; }, "开始做事时有什么阻力"));
+  c.appendChild(APP.renderLabel("能否进入心流"));
+  c.appendChild(APP.renderRadio("flow", ["容易：投入事务时专注连贯，不易分心","困难：很难沉下心，持续走神，需要强迫自己做事"], dim.flow_state, v => { dim.flow_state = v; }));
+  c.appendChild(APP.renderLabel("重要事务是否持续搁置"));
+  c.appendChild(APP.renderRadio("stagnation", ["是","否"], dim.task_stagnation, v => { dim.task_stagnation = v; }));
+  c.appendChild(APP.renderSection("时间分配与成瘾行为"));
+  c.appendChild(APP.renderLabel("短视频/被动娱乐耗时（小时）"));
+  c.appendChild(APP.renderNumber(0, 24, dim.short_video_hours, v => { dim.short_video_hours = v; }, "h"));
+  c.appendChild(APP.renderLabel("碎片化刷屏频次（次）"));
+  c.appendChild(APP.renderNumber(0, 100, dim.scroll_frequency, v => { dim.scroll_frequency = v; }, "次"));
+  c.appendChild(APP.renderSection("节律自控"));
+  c.appendChild(APP.renderLabel("是否出现报复性休闲、逃避式消遣"));
+  c.appendChild(APP.renderRadio("revenge", ["是","否"], dim.revenge_leisure, v => { dim.revenge_leisure = v; }));
+  c.appendChild(APP.renderLabel("是否出现忙时自律、空闲摆烂的波动规律"));
+  c.appendChild(APP.renderRadio("slack", ["是","否"], dim.slack_pattern, v => { dim.slack_pattern = v; }));
+  c.appendChild(APP.renderSection("行为止损能力"));
+  c.appendChild(APP.renderLabel("察觉到虚度之后，能否主动中断不良行为"));
+  c.appendChild(APP.renderRadio("stop", ["是","否"], dim.can_stop, v => { dim.can_stop = v; }));
+  c.appendChild(APP.renderLabel("及时调整状态——做了什么"));
+  c.appendChild(APP.renderText(dim.adjustment_action, v => { dim.adjustment_action = v; }, "填写采取的行为"));
+  c.appendChild(APP.h("div", { style: "margin-top:20px;padding-top:16px;border-top:2px solid #e5e5ea" }));
+  c.appendChild(APP.renderLabel("时间与行为健康总分"));
+  c.appendChild(APP.renderScore(dim.score, v => { dim.score = v; }));
+  return c;
+};
+
+/* ============ Dimension Form: 人际亲密健康 ============ */
+APP.renderInterpersonal = () => {
+  const dim = currentRecord.interpersonal;
+  if (!dim) return APP.h("div", {}, "数据初始化异常");
+  const c = APP.h("div", { className: "card" });
+  c.appendChild(APP.h("div", { className: "card-title" }, DIM_LABELS.interpersonal.label));
+  c.appendChild(APP.h("div", { className: "card-sub" }, DIM_LABELS.interpersonal.sub));
+  c.appendChild(APP.renderSection("亲密关系沟通"));
+  const commC = document.createElement("div");
+  if (!dim.communication_entries) dim.communication_entries = [];
+  const renderComm = () => {
+    while (commC.firstChild) commC.removeChild(commC.firstChild);
+    const arr = dim.communication_entries;
+    for (let i = 0; i < arr.length; i++) {
+      const g = APP.h("div", { className: "exercise-group" });
+      g.appendChild(APP.h("button", { className: "remove", type: "button", onClick: () => { arr.splice(i,1); renderComm(); APP.autoSave(); } }, "\u2715"));
+      const es = arr[i];
+      g.appendChild(APP.renderLabel("角色"));
+      g.appendChild(APP.renderRadio("role_"+i, ["男朋友","父母"], es.role, v => { es.role=v; APP.autoSave(); }));
+      g.appendChild(APP.renderLabel("沟通顺畅度"));
+      g.appendChild(APP.renderRadio("comm_"+i, ["顺畅","勉强","困难"], es.status, v => { es.status=v; APP.autoSave(); }));
+      g.appendChild(APP.renderLabel("情况/原因"));
+      g.appendChild(APP.renderText(es.reason, v => { es.reason=v; }, "描述沟通情况"));
+      commC.appendChild(g);
+    }
+    const addBtn = APP.h("button", { className: "add-exercise", type: "button", onClick: () => { arr.push({role:null,status:null,reason:""}); renderComm(); } }, "+ 添加沟通记录");
+    commC.appendChild(addBtn);
+  };
+  renderComm();
+  c.appendChild(commC);
+  c.appendChild(APP.renderSection("社交平衡"));
+  c.appendChild(APP.renderLabel("有效社交时长（小时）"));
+  c.appendChild(APP.renderNumber(0, 24, dim.social_hours, v => { dim.social_hours = v; }, "h"));
+  c.appendChild(APP.renderLabel("社交消耗感"));
+  c.appendChild(APP.renderRadio("social_drain", ["大","中","小"], dim.social_drain, v => { dim.social_drain = v; }));
+  c.appendChild(APP.renderLabel("独处"));
+  c.appendChild(APP.renderRadio("solitude", ["感到安宁","空虚难耐"], dim.solitude, v => { dim.solitude = v; }));
+  c.appendChild(APP.renderSection("边界感受"));
+  c.appendChild(APP.renderLabel("是否容易被他人情绪影响、难以拒绝、过度妥协"));
+  c.appendChild(APP.renderRadio("boundary", ["有","无"], dim.boundary_issue, v => { dim.boundary_issue = v; }));
+  c.appendChild(APP.renderText(dim.boundary_reason, v => { dim.boundary_reason = v; }, "原因"));
+  c.appendChild(APP.renderSection("情感支持获取"));
+  c.appendChild(APP.renderLabel("情绪低落时是否拥有可靠倾诉渠道"));
+  c.appendChild(APP.renderRadio("support", ["有","无"], dim.has_support, v => { dim.has_support = v; }));
+  c.appendChild(APP.renderText(dim.support_channel, v => { dim.support_channel = v; }, "渠道"));
+  c.appendChild(APP.h("div", { style: "margin-top:20px;padding-top:16px;border-top:2px solid #e5e5ea" }));
+  c.appendChild(APP.renderLabel("人际亲密健康总分"));
+  c.appendChild(APP.renderScore(dim.score, v => { dim.score = v; }));
+  return c;
+};
+
+/* ============ Dimension Form: 精神目标健康 ============ */
+APP.renderPurpose = () => {
+  const dim = currentRecord.purpose;
+  if (!dim) return APP.h("div", {}, "数据初始化异常");
+  const c = APP.h("div", { className: "card" });
+  c.appendChild(APP.h("div", { className: "card-title" }, DIM_LABELS.purpose.label));
+  c.appendChild(APP.h("div", { className: "card-sub" }, DIM_LABELS.purpose.sub));
+  c.appendChild(APP.renderSection("目标清晰度"));
+  c.appendChild(APP.renderLabel("是否拥有短期事务目标"));
+  c.appendChild(APP.renderRadio("short_goal", ["是","否"], dim.has_short_term_goal, v => { dim.has_short_term_goal = v; }));
+  c.appendChild(APP.renderLabel("是否拥有长期发展方向"));
+  c.appendChild(APP.renderRadio("long_dir", ["是","否"], dim.has_long_term_direction, v => { dim.has_long_term_direction = v; }));
+  c.appendChild(APP.renderLabel("目标是否模糊摇摆"));
+  c.appendChild(APP.renderRadio("goal_vague", ["是","否"], dim.goal_vague, v => { dim.goal_vague = v; }));
+  c.appendChild(APP.renderSection("价值感知"));
+  c.appendChild(APP.renderLabel("一天结束是否产生'虚度、浪费时间'的感受"));
+  c.appendChild(APP.renderRadio("wasted", ["是","否"], dim.feels_wasted, v => { dim.feels_wasted = v; }));
+  c.appendChild(APP.renderLabel("做事能否获得充实感"));
+  c.appendChild(APP.renderRadio("fulfilled", ["是","否"], dim.feels_fulfilled, v => { dim.feels_fulfilled = v; }));
+  c.appendChild(APP.renderSection("内在秩序感"));
+  c.appendChild(APP.renderLabel("生活是否有稳定主线"));
+  c.appendChild(APP.renderRadio("stable", ["是","否"], dim.has_stable_path, v => { dim.has_stable_path = v; }));
+  c.appendChild(APP.renderLabel("容易陷入漫无目的、被动消磨时光"));
+  c.appendChild(APP.renderRadio("drifts", ["是","否"], dim.drifts_easily, v => { dim.drifts_easily = v; }));
+  c.appendChild(APP.renderSection("长期动力"));
+  c.appendChild(APP.renderRadio("motivation", ["持续保有成长意愿","持续躺平、失去行动渴望"], dim.long_term_motivation, v => { dim.long_term_motivation = v; }));
+  c.appendChild(APP.h("div", { style: "margin-top:20px;padding-top:16px;border-top:2px solid #e5e5ea" }));
+  c.appendChild(APP.renderLabel("精神目标健康总分"));
+  c.appendChild(APP.renderScore(dim.score, v => { dim.score = v; }));
+  return c;
+};
+/* ============ Dimension Render Dispatcher ============ */
+APP.renderDimension = (key) => {
+  try {
+    const container = document.getElementById("view-dim");
+    APP.empty(container);
+    const backBtn = APP.h("button", { className: "back-btn",
+      onClick: () => APP.goHome() }, "← 返回");
+    container.appendChild(backBtn);
+    const dateStr = currentDate === APP.today() ?
+      "今天" : APP.dateCN(currentDate);
+    container.appendChild(APP.h("div",
+      { style: "font-size:13px;color:#8E8E93;margin-bottom:8px" }, dateStr));
+    let form;
+    switch (key) {
+      case "physical": form = APP.renderPhysical(); break;
+      case "mental": form = APP.renderMental(); break;
+      case "behavior": form = APP.renderBehavior(); break;
+      case "interpersonal": form = APP.renderInterpersonal(); break;
+      case "purpose": form = APP.renderPurpose(); break;
+    }
+    if (form) container.appendChild(form);
+  } catch (e) {
+    const d = document.getElementById("view-dim");
+    APP.empty(d);
+    d.appendChild(APP.h("button",{className:"back-btn",
+      onClick:()=>APP.goHome()},"← 返回"));
+    d.appendChild(APP.h("div",
+      {style:"padding:20px;color:#FF3B30;font-size:15px"},
+      "错误: "+(e.message||"")));
+  }
+};
+
+/* ============ History Calendar View ============ */
+APP.renderHistory = async () => {
+  const container = document.getElementById("view-history");
+  APP.empty(container);
+  const now = new Date();
+  let year = now.getFullYear(), month = now.getMonth() + 1;
+
+  container.appendChild(APP.h("div", { className: "header" }, APP.h("div", { className: "date" }, "历史记录")));
+  const records = await DB.getAll();
+
+  const renderCal = () => {
+    APP.empty(container);
+    container.appendChild(APP.h("div", { className: "header" }, APP.h("div", { className: "date" }, "历史记录")));
+
+    const calCard = APP.h("div", { className: "card" });
+    const header = APP.h("div", { className: "cal-header" });
+    const prev = APP.h("button", { style: "border:none;background:none;font-size:18px;cursor:pointer;color:#007AFF", type: "button", onClick: () => { month--; if (month < 1) { month = 12; year--; } renderCal(); } }, "‹");
+    header.appendChild(prev);
+    header.appendChild(APP.h("span", { style: "font-size:16px;font-weight:600" }, year + "年" + month + "月"));
+    const next = APP.h("button", { style: "border:none;background:none;font-size:18px;cursor:pointer;color:#007AFF", type: "button", onClick: () => { month++; if (month > 12) { month = 1; year++; } renderCal(); } }, "›");
+    header.appendChild(next);
+    calCard.appendChild(header);
+
+    // Week headers
+    const weeks = ["日","一","二","三","四","五","六"];
+    const grid = APP.h("div", { className: "cal-grid" });
+    for (const w of weeks) grid.appendChild(APP.h("div", { style: "font-size:12px;color:#8e8e93;padding:4px 0" }, w));
+
+    // Days
+    const firstDay = new Date(year, month - 1, 1).getDay();
+    const daysInMonth = new Date(year, month, 0).getDate();
+    const todayId = APP.today();
+
+    // Empty cells
+    for (let i = 0; i < firstDay; i++) grid.appendChild(APP.h("div", {}));
+
+    for (let d = 1; d <= daysInMonth; d++) {
+      const id = year + "-" + String(month).padStart(2,"0") + "-" + String(d).padStart(2,"0");
+      const record = records.find(r => r.id === id);
+      const isToday = id === todayId;
+      const classes = ["day"];
+      if (isToday) classes.push("today");
+      if (record) classes.push("has-record", record.completed ? "completed" : "incomplete");
+      const dayEl = APP.h("div", { className: classes.join(" "), onClick: () => {
+        currentDate = id;
+        currentRecord = record || { id, ...JSON.parse(JSON.stringify(EMPTY_RECORD)) };
+        document.getElementById("view-dim").classList.remove("hidden");
+        container.classList.add("hidden");
+        APP.empty(document.getElementById("view-dim"));
+        const backBtn = APP.h("button", { className: "back-btn", onClick: () => { currentDate = APP.today(); APP.renderHistory(); } }, "← 返回");
+        document.getElementById("view-dim").appendChild(backBtn);
+        document.getElementById("view-dim").appendChild(APP.h("div", { style: "font-size:13px;color:#8e8e93;margin-bottom:8px" }, APP.dateCN(id)));
+        const infoCard = APP.h("div", { className: "card" });
+        infoCard.appendChild(APP.h("div", { className: "card-title" }, APP.dateCN(id) + " 记录"));
+        if (record && record.completed) infoCard.appendChild(APP.h("div", { className: "card-sub", style: "color:#34C759" }, "✓ 已完成"));
+        else if (record) infoCard.appendChild(APP.h("div", { className: "card-sub", style: "color:#FF9500" }, "⚠ 未完成"));
+        else infoCard.appendChild(APP.h("div", { className: "card-sub", style: "color:#8e8e93" }, "无记录"));
+        for (const k of DIM_KEYS) {
+          const cfg = DIM_LABELS[k], d = currentRecord[k];
+          const hasScore = d && d.score != null;
+          const card = APP.h("div", { className: "dim-card", onClick: () => APP.openDimension(k, id) });
+          card.appendChild(APP.h("div", { className: "name" }, cfg.label));
+          card.appendChild(APP.h("span", { className: "score " + (hasScore ? "filled" : "empty") }, hasScore ? d.score + "/10" : "未填写"));
+          card.appendChild(APP.h("span", { className: "arrow" }, "›"));
+          document.getElementById("view-dim").appendChild(card);
+        }
+      } }, d);
+      grid.appendChild(dayEl);
+    }
+    calCard.appendChild(grid);
+    container.appendChild(calCard);
+
+    // Stats summary
+    const monthRecords = records.filter(r => r.id.startsWith(year + "-" + String(month).padStart(2,"0")));
+    if (monthRecords.length > 0) {
+      const statCard = APP.h("div", { className: "card" });
+      statCard.appendChild(APP.h("div", { className: "card-title" }, "本月统计"));
+      statCard.appendChild(APP.h("div", { className: "card-sub" }, "记录天数：" + monthRecords.length + "天"));
+      const completed = monthRecords.filter(r => r.completed).length;
+      statCard.appendChild(APP.h("div", { className: "card-sub" }, "完成天数：" + completed + "天"));
+      container.appendChild(statCard);
+    }
+  };
+  renderCal();
+};
+
+/* ============ Export View ============ */
+APP.renderExport = () => {
+  const container = document.getElementById("view-export");
+  APP.empty(container);
+  container.appendChild(APP.h("div", { className: "header" }, APP.h("div", { className: "date" }, "导出健康记录")));
+  const card = APP.h("div", { className: "card" });
+  card.appendChild(APP.h("div", { className: "card-title" }, "导出选项"));
+  card.appendChild(APP.h("div", { className: "card-sub" }, "导出为 Markdown 格式，可将文件导入本地 wiki"));
+  container.appendChild(card);
+  const btn1 = APP.h("button", { className: "export-btn primary", type: "button", onClick: () => APP.exportSingle() }, "导出今天");
+  const btn2 = APP.h("button", { className: "export-btn primary", type: "button", onClick: () => APP.exportWeek() }, "导出本周");
+  const btn3 = APP.h("button", { className: "export-btn secondary", type: "button", onClick: () => APP.exportAll() }, "导出全部");
+  container.appendChild(btn1);
+  container.appendChild(btn2);
+  container.appendChild(btn3);
+};
+
+/* ============ Export Logic ============ */
+APP.recordToMD = (record) => {
+  if (!record) return "";
+  const r = record;
+  let md = "# " + r.id + " 健康记录\n\n";
+  const dims = [
+    { key: "physical", label: "生理躯体健康", fields: [
+      ["入睡难度", "sleep_difficulty"], ["睡眠时长(h)", "sleep_hours"], ["睡眠深浅", "sleep_depth"],
+      ["睡眠质量", "sleep_quality"], ["晨起疲惫", "sleep_tiredness"], ["作息节律", "sleep_routine"],
+      ["食欲", "appetite"], ["早餐", "breakfast"], ["午餐", "lunch"], ["晚餐", "dinner"],
+      ["饮品", "drinks"], ["三餐规律", "meal_regularity"], ["饮食情况", "diet_behavior"],
+      ["饮水", "water"], ["大便", "stool"], ["运动", "exercises"], ["久坐", "sedentary"],
+      ["气血", "qi_blood"], ["体感", "symptoms"],
+      ["医院","hospital"],["科室","department"],["就诊原因","visit_reason"],["用药","medication"],["用药原因","medication_reason"]
+    ]},
+    { key: "mental", label: "心理情绪健康", fields: [
+      ["情绪基调","mood_tags"],
+      ["压力来源","stress_source"],["压力耐受","stress_tolerance"],["安抚能力","self_soothe_ability"],
+      ["安抚行为","self_soothe_action"],["修复速度","recovery_speed"],
+      ["自我否定","self_denial"],["自我否定原因","self_denial_reason"],
+      ["包容状态","accept_present"],["包容原因","accept_present_reason"]
+    ]},
+    { key: "behavior", label: "时间与行为健康", fields: [
+      ["完成率","completion_rate"],["拖延程度","procrastination"],["启动阻力","startup_resistance"],
+      ["心流","flow_state"],["事务搁置","task_stagnation"],["短视频(h)","short_video_hours"],
+      ["刷屏(次)","scroll_frequency"],["报复性休闲","revenge_leisure"],["空闲摆烂","slack_pattern"],
+      ["中断能力","can_stop"],["调整行为","adjustment_action"]
+    ]},
+    { key: "interpersonal", label: "人际亲密健康", fields: [
+      ["与男朋友沟通","bf_communication"],["与父母沟通","parent_communication"],
+      ["矛盾冲突","conflict"],["理解感","understanding"],["期待落差","expectation_gap"],
+      ["关系状态","relationship_status"],["社交时长(h)","social_hours"],["社交消耗","social_drain"],
+      ["独处","solitude"],["边界问题","boundary_issue"],["边界原因","boundary_reason"],
+      ["倾诉渠道","has_support"],["渠道说明","support_channel"]
+    ]},
+    { key: "purpose", label: "精神目标健康", fields: [
+      ["短期目标","has_short_term_goal"],["长期方向","has_long_term_direction"],
+      ["目标模糊","goal_vague"],["虚度感","feels_wasted"],["充实感","feels_fulfilled"],
+      ["稳定主线","has_stable_path"],["被动消磨","drifts_easily"],["长期动力","long_term_motivation"]
+    ]}
+  ];
+  for (const dim of dims) {
+    const d = r[dim.key];
+    md += "## " + dim.label + (d && d.score != null ? "：" + d.score + "/10" : "：未评分") + "\n\n";
+    if (d) {
+      for (const [label, key] of dim.fields) {
+        const val = d[key];
+        if (val != null && val !== "" && !(Array.isArray(val) && val.length === 0)) {
+          const display = Array.isArray(val) ? val.join("、") : (typeof val === "boolean" ? (val ? "是" : "否") : val);
+          md += "**" + label + "：**" + display + "\n\n";
+        }
+      }
+    }
+  }
+  return md;
+};
+
+APP.downloadMD = (content, filename) => {
+  const blob = new Blob([content], { type: "text/markdown;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = filename || "health-record.md";
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+};
+
+APP.exportSingle = async () => {
+  const id = APP.today();
+  const record = await DB.get(id);
+  if (!record) return APP.showToast("今天还没有记录");
+  const md = APP.recordToMD(record);
+  APP.downloadMD(md, id + "-健康记录.md");
+  APP.showToast("已导出 " + id);
+};
+
+APP.exportWeek = async () => {
+  const now = new Date();
+  const dayOfWeek = now.getDay();
+  const monday = new Date(now);
+  monday.setDate(now.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
+  const all = await DB.getAll();
+ 
+  const mondayId = monday.getFullYear() + "-" + String(monday.getMonth()+1).padStart(2,"0") + "-" + String(monday.getDate()).padStart(2,"0");
+  weekRecords = all.filter(r => r.id >= mondayId && r.id <= APP.today() && r.completed);
+  if (weekRecords.length === 0) return APP.showToast("本周暂无已完成的记录");
+  let md = "# " + mondayId + " ~ " + APP.today() + " 健康周记\n\n";
+  for (const r of weekRecords.sort((a, b) => a.id < b.id ? -1 : 1)) md += APP.recordToMD(r) + "\n---\n\n";
+  APP.downloadMD(md, "健康周记-" + mondayId + "-to-" + APP.today() + ".md");
+  APP.showToast("已导出本周 " + weekRecords.length + " 条记录");
+};
+
+APP.exportAll = async () => {
+  const all = await DB.getAll();
+  const completed = all.filter(r => r.completed);
+  if (completed.length === 0) return APP.showToast("暂无已完成的记录");
+  let md = "# 全部健康记录\n\n";
+  for (const r of completed.sort((a, b) => a.id < b.id ? -1 : 1)) md += APP.recordToMD(r) + "\n---\n\n";
+  APP.downloadMD(md, "全部健康记录-" + APP.today() + ".md");
+  APP.showToast("已导出 " + completed.length + " 条记录");
+};
+
+/* ============ Init ============ */
+document.addEventListener("DOMContentLoaded", () => APP.init());
+</script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,23 @@
+﻿ {
+   "name": "健康追踪",
+   "short_name": "健康",
+   "description": "每日五大维度健康记录",
+   "start_url": ".",
+   "display": "standalone",
+   "background_color": "#F5F7FA",
+   "theme_color": "#007AFF",
+   "orientation": "portrait",
+   "icons": [
+     {
+       "src": "icons/icon-192.png",
+       "sizes": "192x192",
+       "type": "image/png"
+     },
+     {
+       "src": "icons/icon-512.png",
+       "sizes": "512x512",
+       "type": "image/png"
+     }
+   ]
+ }
+
