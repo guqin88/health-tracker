@@ -1,0 +1,12 @@
+pages_response.txt
+payload.json
+__pycache__/
+*.pyc
+.DS_Store
+*.log
+.venv/
+venv/
+env/
+.env
+.agents/
+*.tmp
