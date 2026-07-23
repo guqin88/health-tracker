@@ -218,6 +218,11 @@ APP.renderRadio = (name, options, value, onChange, placeholder) => {
     sel.appendChild(o);
   }
   sel.addEventListener("change", () => { onChange(sel.value); APP.autoSave(); });
+  // auto-save default when value not set and no placeholder
+  if (value == null && !placeholder && options.length > 0) {
+    onChange(options[0]);
+    setTimeout(() => APP.autoSave(), 0);
+  }
   return sel;
 };
 
@@ -254,6 +259,11 @@ APP.renderNumber = (min, max, value, onChange, unit) => {
     valEl.textContent = nv + (unit || "");
     onChange(nv); APP.autoSave();
   });
+  // auto-save default when value not set
+  if (value == null) {
+    onChange(initVal);
+    setTimeout(() => APP.autoSave(), 0);
+  }
   c.appendChild(decBtn);
   c.appendChild(valEl);
   c.appendChild(incBtn);
