@@ -888,10 +888,14 @@ APP.recordToMD = (record) => {
     const d = r[dim.key];
     md += "## " + dim.label + (d && d.score != null ? "：" + d.score + "/10" : "：未评分") + "\n\n";
     if (d) {
-      for (const [label, key] of dim.fields) {
-        const display = APP.fmt(d[key]);
-        if (display != null) md += "**" + label + "：**" + display + "\n\n";
-      }
+     for (const [label, key] of dim.fields) {
+        try {
+          const display = APP.fmt(d[key]);
+          if (display != null) md += "**" + label + "：**" + display + "\n\n";
+        } catch(e) {
+          md += "**" + label + "：**（数据格式错误: " + ((e&&e.message)||"") + "）\n\n";
+        }
+     }
     }
   }
   return md;
