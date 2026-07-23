@@ -826,15 +826,24 @@ APP.renderExport = () => {
 
 /* ============ Export Logic ============ */
 /* format field value for export */
+const KEY_LABELS = {
+  type: "类型",
+  duration: "时长",
+  reason: "原因",
+  role: "角色",
+  status: "沟通顺畅度"
+};
+
 APP.fmt = (val) => {
-  if (val == null || val === "" || (Array.isArray(val) && val.length === 0)) return null;
+  if (val == null || val === "") return null;
+  if (Array.isArray(val) && val.length === 0) return "无";
   if (typeof val === "boolean") return val ? "是" : "否";
-  if (!Array.isArray(val)) return String(val);
+  if (!Array.isArray(val)) return String(val) || "未填写";
   // array of primitives (strings/numbers)
-  if (typeof val[0] !== "object") return val.join("、");
+  if (typeof val[0] !== "object") return val.join("、") || "无";
   // array of objects — format each entry
   return val.map(obj => {
-    return Object.entries(obj).filter(([,v]) => v != null && v !== "").map(([k,v]) => k + ": " + v).join("，");
+    return Object.entries(obj).map(([k,v]) => (KEY_LABELS[k] || k) + ": " + (v != null && v !== "" ? v : "未选择")).join("，");
   }).join("；");
 };
 
@@ -888,10 +897,10 @@ APP.recordToMD = (record) => {
     const d = r[dim.key];
     md += "## " + dim.label + (d && d.score != null ? "：" + d.score + "/10" : "：未评分") + "\n\n";
     if (d) {
-     for (const [label, key] of dim.fields) {
+      for (const [label, key] of dim.fields) {
         try {
           const display = APP.fmt(d[key]);
-          if (display != null) md += "**" + label + "：**" + display + "\n\n";
+          md += "**" + label + "：**" + (display != null ? display : "未填写") + "\n\n";
         } catch(e) {
           md += "**" + label + "：**（数据格式错误: " + ((e&&e.message)||"") + "）\n\n";
         }
