@@ -431,7 +431,7 @@ APP.renderPhysical = () => {
   c.appendChild(APP.renderLabel("睡眠深浅"));
   c.appendChild(APP.renderRadio("sleep_depth", ["深","浅"], dim.sleep_depth, v => { dim.sleep_depth = v; }));
   c.appendChild(APP.renderLabel("睡眠质量"));
-  c.appendChild(APP.renderRadio("sleep_qual", ["半夜易醒","多梦"], dim.sleep_quality, v => { dim.sleep_quality = v; }));
+  c.appendChild(APP.renderRadio("sleep_qual", ["好","半夜易醒","多梦"], dim.sleep_quality, v => { dim.sleep_quality = v; }));
   c.appendChild(APP.renderLabel("晨起疲惫感"));
   c.appendChild(APP.renderRadio("sleep_tired", ["有","无"], dim.sleep_tiredness, v => { dim.sleep_tiredness = v; }));
   c.appendChild(APP.renderLabel("作息节律稳定性"));
@@ -444,19 +444,19 @@ APP.renderPhysical = () => {
   c.appendChild(APP.renderLabel("早餐"));
   c.appendChild(APP.renderMultiSelect("breakfast", ["没吃","馒头","包子","水煮蛋","方便面","小米粥","白粥","汤泡饭","早餐面条","玉米","馄饨"], dim.breakfast, v => { dim.breakfast = v; }));
   c.appendChild(APP.renderLabel("午餐"));
-  c.appendChild(APP.renderMultiSelect("lunch", ["辣炒卤牛肉","辣炒鱿鱼丝","辣炒卤猪肉","青椒炒肉丝","小鸡炖蘑菇","鹌鹑蛋红烧肉","红烧鱼","青椒炒鸡蛋干","炒生菜","炒空心菜","炒油麦菜","青菜炒腐竹","山药炒木耳","青椒土豆丝","牛肉丸生菜汤","番茄鸡蛋汤","紫菜鸡蛋汤","冬瓜排骨汤","玉米排骨汤","萝卜排骨汤","香菇鸡汤","鱼汤","米饭","馒头","拌面","牛肉丸粿条","江西米粉","水饺","皮蛋瘦肉粥","白粥","烤鱼","椰子鸡","海底捞","火锅","外卖"], dim.lunch, v => { dim.lunch = v; }));
+  c.appendChild(APP.renderMultiSelect("lunch", ["炒鸡蛋","辣炒卤牛肉","辣炒鱿鱼丝","辣炒卤猪肉","青椒炒肉丝","小鸡炖蘑菇","鹌鹑蛋红烧肉","红烧鱼","青椒炒鸡蛋干","炒生菜","炒空心菜","炒油麦菜","青菜炒腐竹","山药炒木耳","青椒土豆丝","牛肉丸生菜汤","番茄鸡蛋汤","紫菜鸡蛋汤","冬瓜排骨汤","玉米排骨汤","萝卜排骨汤","香菇鸡汤","鱼汤","米饭","馒头","拌面","牛肉丸粿条","江西米粉","水饺","皮蛋瘦肉粥","白粥","烤鱼","椰子鸡","海底捞","火锅","外卖"], dim.lunch, v => { dim.lunch = v; }));
   c.appendChild(APP.renderLabel("晚餐"));
-  c.appendChild(APP.renderMultiSelect("dinner", ["辣炒卤牛肉","辣炒鱿鱼丝","辣炒卤猪肉","青椒炒肉丝","小鸡炖蘑菇","鹌鹑蛋红烧肉","红烧鱼","青椒炒鸡蛋干","炒生菜","炒空心菜","炒油麦菜","青菜炒腐竹","山药炒木耳","青椒土豆丝","牛肉丸生菜汤","番茄鸡蛋汤","紫菜鸡蛋汤","冬瓜排骨汤","玉米排骨汤","萝卜排骨汤","香菇鸡汤","鱼汤","米饭","馒头","拌面","牛肉丸粿条","江西米粉","水饺","皮蛋瘦肉粥","白粥","烤鱼","椰子鸡","海底捞","火锅","外卖"], dim.dinner, v => { dim.dinner = v; }));
+  c.appendChild(APP.renderMultiSelect("dinner", ["炒鸡蛋","辣炒卤牛肉","辣炒鱿鱼丝","辣炒卤猪肉","青椒炒肉丝","小鸡炖蘑菇","鹌鹑蛋红烧肉","红烧鱼","青椒炒鸡蛋干","炒生菜","炒空心菜","炒油麦菜","青菜炒腐竹","山药炒木耳","青椒土豆丝","牛肉丸生菜汤","番茄鸡蛋汤","紫菜鸡蛋汤","冬瓜排骨汤","玉米排骨汤","萝卜排骨汤","香菇鸡汤","鱼汤","米饭","馒头","拌面","牛肉丸粿条","江西米粉","水饺","皮蛋瘦肉粥","白粥","烤鱼","椰子鸡","海底捞","火锅","外卖"], dim.dinner, v => { dim.dinner = v; }));
   c.appendChild(APP.renderLabel("饮品"));
   c.appendChild(APP.renderMultiSelect("drinks", ["无","咖啡","奶茶","牛奶"], dim.drinks, v => { dim.drinks = v; }, "选择饮品"));
   c.appendChild(APP.renderLabel("三餐规律"));
-  c.appendChild(APP.renderMultiSelect("meal_reg", ["没吃早饭","午餐过晚","没吃晚饭"], dim.meal_regularity, v => { dim.meal_regularity = v; }, "选择规律问题"));
+  c.appendChild(APP.renderMultiSelect("meal_reg", ["三餐规律","没吃早饭","午餐过晚","没吃晚饭"], dim.meal_regularity, v => { dim.meal_regularity = v; }, "选择规律问题"));
   c.appendChild(APP.renderLabel("饮食情况"));
-  c.appendChild(APP.renderRadio("diet_beh", ["暴饮暴食","节食"], dim.diet_behavior, v => { dim.diet_behavior = v; }));
+  c.appendChild(APP.renderRadio("diet_beh", ["正常","暴饮暴食","节食"], dim.diet_behavior, v => { dim.diet_behavior = v; }));
   c.appendChild(APP.renderLabel("饮水情况"));
   c.appendChild(APP.renderRadio("water", ["正常","少"], dim.water, v => { dim.water = v; }));
   c.appendChild(APP.renderLabel("大便状态"));
-  c.appendChild(APP.renderRadio("stool", ["窜稀","便秘","没拉"], dim.stool, v => { dim.stool = v; }));
+  c.appendChild(APP.renderRadio("stool", ["正常","窜稀","便秘","没拉"], dim.stool, v => { dim.stool = v; }));
 
   // 运动与体能
   c.appendChild(APP.renderSection("运动与体能"));
@@ -825,10 +825,24 @@ APP.renderExport = () => {
 };
 
 /* ============ Export Logic ============ */
+/* format field value for export */
+APP.fmt = (val) => {
+  if (val == null || val === "" || (Array.isArray(val) && val.length === 0)) return null;
+  if (typeof val === "boolean") return val ? "是" : "否";
+  if (!Array.isArray(val)) return String(val);
+  // array of primitives (strings/numbers)
+  if (typeof val[0] !== "object") return val.join("、");
+  // array of objects — format each entry
+  return val.map(obj => {
+    return Object.entries(obj).filter(([,v]) => v != null && v !== "").map(([k,v]) => k + ": " + v).join("，");
+  }).join("；");
+};
+
 APP.recordToMD = (record) => {
   if (!record) return "";
   const r = record;
   let md = "# " + r.id + " 健康记录\n\n";
+  md += "**记录状态：**" + (r.completed ? "已完成" : "未完成") + "\n\n";
   const dims = [
     { key: "physical", label: "生理躯体健康", fields: [
       ["入睡难度", "sleep_difficulty"], ["睡眠时长(h)", "sleep_hours"], ["睡眠深浅", "sleep_depth"],
@@ -837,32 +851,37 @@ APP.recordToMD = (record) => {
       ["饮品", "drinks"], ["三餐规律", "meal_regularity"], ["饮食情况", "diet_behavior"],
       ["饮水", "water"], ["大便", "stool"], ["运动", "exercises"], ["久坐", "sedentary"],
       ["气血", "qi_blood"], ["体感", "symptoms"],
-      ["医院","hospital"],["科室","department"],["就诊原因","visit_reason"],["用药","medication"],["用药原因","medication_reason"]
+      ["医院","hospital"],["科室","department"],["就诊原因","visit_reason"],["用药","medication"],["用药原因","medication_reason"],
+      ["评分","score"]
     ]},
     { key: "mental", label: "心理情绪健康", fields: [
       ["情绪基调","mood_tags"],
+      ["心智状态","mental_states"],
       ["压力来源","stress_source"],["压力耐受","stress_tolerance"],["安抚能力","self_soothe_ability"],
       ["安抚行为","self_soothe_action"],["修复速度","recovery_speed"],
       ["自我否定","self_denial"],["自我否定原因","self_denial_reason"],
-      ["包容状态","accept_present"],["包容原因","accept_present_reason"]
+      ["包容状态","accept_present"],["包容原因","accept_present_reason"],
+      ["评分","score"]
     ]},
     { key: "behavior", label: "时间与行为健康", fields: [
       ["完成率","completion_rate"],["拖延程度","procrastination"],["启动阻力","startup_resistance"],
       ["心流","flow_state"],["事务搁置","task_stagnation"],["短视频(h)","short_video_hours"],
       ["刷屏(次)","scroll_frequency"],["报复性休闲","revenge_leisure"],["空闲摆烂","slack_pattern"],
-      ["中断能力","can_stop"],["调整行为","adjustment_action"]
+      ["中断能力","can_stop"],["调整行为","adjustment_action"],
+      ["评分","score"]
     ]},
     { key: "interpersonal", label: "人际亲密健康", fields: [
-      ["与男朋友沟通","bf_communication"],["与父母沟通","parent_communication"],
-      ["矛盾冲突","conflict"],["理解感","understanding"],["期待落差","expectation_gap"],
-      ["关系状态","relationship_status"],["社交时长(h)","social_hours"],["社交消耗","social_drain"],
+      ["沟通记录","communication_entries"],
+      ["社交时长(h)","social_hours"],["社交消耗","social_drain"],
       ["独处","solitude"],["边界问题","boundary_issue"],["边界原因","boundary_reason"],
-      ["倾诉渠道","has_support"],["渠道说明","support_channel"]
+      ["倾诉渠道","has_support"],["渠道说明","support_channel"],
+      ["评分","score"]
     ]},
     { key: "purpose", label: "精神目标健康", fields: [
       ["短期目标","has_short_term_goal"],["长期方向","has_long_term_direction"],
       ["目标模糊","goal_vague"],["虚度感","feels_wasted"],["充实感","feels_fulfilled"],
-      ["稳定主线","has_stable_path"],["被动消磨","drifts_easily"],["长期动力","long_term_motivation"]
+      ["稳定主线","has_stable_path"],["被动消磨","drifts_easily"],["长期动力","long_term_motivation"],
+      ["评分","score"]
     ]}
   ];
   for (const dim of dims) {
@@ -870,11 +889,8 @@ APP.recordToMD = (record) => {
     md += "## " + dim.label + (d && d.score != null ? "：" + d.score + "/10" : "：未评分") + "\n\n";
     if (d) {
       for (const [label, key] of dim.fields) {
-        const val = d[key];
-        if (val != null && val !== "" && !(Array.isArray(val) && val.length === 0)) {
-          const display = Array.isArray(val) ? val.join("、") : (typeof val === "boolean" ? (val ? "是" : "否") : val);
-          md += "**" + label + "：**" + display + "\n\n";
-        }
+        const display = APP.fmt(d[key]);
+        if (display != null) md += "**" + label + "：**" + display + "\n\n";
       }
     }
   }
