@@ -924,8 +924,8 @@ APP.exportWeek = async () => {
   const all = await DB.getAll();
  
   const mondayId = monday.getFullYear() + "-" + String(monday.getMonth()+1).padStart(2,"0") + "-" + String(monday.getDate()).padStart(2,"0");
-  weekRecords = all.filter(r => r.id >= mondayId && r.id <= APP.today() && r.completed);
-  if (weekRecords.length === 0) return APP.showToast("本周暂无已完成的记录");
+  weekRecords = all.filter(r => r.id >= mondayId && r.id <= APP.today());
+  if (weekRecords.length === 0) return APP.showToast("本周暂无记录");
   let md = "# " + mondayId + " ~ " + APP.today() + " 健康周记\n\n";
   for (const r of weekRecords.sort((a, b) => a.id < b.id ? -1 : 1)) md += APP.recordToMD(r) + "\n---\n\n";
   APP.downloadMD(md, "健康周记-" + mondayId + "-to-" + APP.today() + ".md");
@@ -934,12 +934,11 @@ APP.exportWeek = async () => {
 
 APP.exportAll = async () => {
   const all = await DB.getAll();
-  const completed = all.filter(r => r.completed);
-  if (completed.length === 0) return APP.showToast("暂无已完成的记录");
+  if (all.length === 0) return APP.showToast("暂无记录");
   let md = "# 全部健康记录\n\n";
-  for (const r of completed.sort((a, b) => a.id < b.id ? -1 : 1)) md += APP.recordToMD(r) + "\n---\n\n";
+  for (const r of all.sort((a, b) => a.id < b.id ? -1 : 1)) md += APP.recordToMD(r) + "\n---\n\n";
   APP.downloadMD(md, "全部健康记录-" + APP.today() + ".md");
-  APP.showToast("已导出 " + completed.length + " 条记录");
+  APP.showToast("已导出 " + all.length + " 条记录");
 };
 
 /* ============ Init ============ */
