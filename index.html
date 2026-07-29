@@ -965,7 +965,22 @@ APP.exportAll = async () => {
 };
 
 /* ============ Init ============ */
-document.addEventListener("DOMContentLoaded", () => APP.init());
+document.addEventListener("DOMContentLoaded", () => {
+  APP.init();
+  // register service worker and detect updates
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("/sw.js").then(reg => {
+      reg.addEventListener("updatefound", () => {
+        const sw = reg.installing;
+        sw.addEventListener("statechange", () => {
+          if (sw.state === "installed" && navigator.serviceWorker.controller) {
+            setTimeout(() => APP.showToast("新版本已就绪，请关闭App重新打开"), 2000);
+          }
+        });
+      });
+    });
+  }
+});
 </script>
 </body>
 </html>
